@@ -1,4 +1,6 @@
 00-fullstack-php-modules/
+.idea/*
 /themes/__cafeapp
+/themes/__cafeapp_projeto_saas
 /vendor
 /source/Boot/Config.php
