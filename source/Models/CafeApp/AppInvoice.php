@@ -164,9 +164,9 @@ class AppInvoice extends Model
         $find = $this->find("user_id = :user AND status = :status",
             "user={$wallet->user_id}&status=paid",
             "
-            (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND wallet_id = {$wallet->id} AND status = :status AND type = 'income') as income,
-            (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND wallet_id = {$wallet->id} AND status = :status AND type = 'expense') as expense
-        ");
+            (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND wallet_id = {$wallet->id} AND status = :status AND type = 'income') AS income,
+            (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND wallet_id = {$wallet->id} AND status = :status AND type = 'expense') AS expense
+        ")->fetch();
 
         if ($find) {
             $balance->income = abs($find->income);

@@ -279,6 +279,72 @@ class App extends Controller
     }
 
     /**
+     * @param array|null $data
+     */
+    public function wallets(?array $data): void
+    {
+        //create
+        if (!empty($data["wallet"]) && !empty($data["wallet_name"])) {
+            $wallet = new AppWallet();
+            $wallet->user_id = $this->user->id;
+            $wallet->wallet = filter_var($data["wallet_name"], FILTER_SANITIZE_STRIPPED);
+            $wallet->save();
+
+            echo json_encode(["reload" => true]);
+            return;
+        }
+
+        //edit
+        if (!empty($data["wallet"]) && !empty($data["wallet_edit"])) {
+            $wallet = (new AppWallet())
+                ->find("user_id = :user AND id = :id",
+                    "user={$this->user->id}&id={$data["wallet"]}")
+                ->fetch();
+            if ($wallet) {
+                $wallet->wallet = filter_var($data["wallet_edit"], FILTER_SANITIZE_STRIPPED);
+                $wallet->save();
+            }
+
+            echo json_encode(["wallet_edit" => true]);
+            return;
+        }
+
+        //remove
+        if (!empty($data["wallet"]) && !empty($data["wallet_remove"])) {
+            $wallet = (new AppWallet())
+                ->find("user_id = :user AND id = :id",
+                    "user={$this->user->id}&id={$data["wallet"]}")
+                ->fetch();
+
+            if ($wallet) {
+                $wallet->destroy();
+                (new Session())->unset("walletfilter");
+            }
+
+            echo json_encode(["wallet_remove" => true]);
+            return;
+        }
+
+        $head = $this->seo->render(
+            "Minhas carteiras - " . CONF_SITE_NAME,
+            CONF_SITE_DESC,
+            url(),
+            theme("/assets/images/share.jpg"),
+            false
+        );
+
+        $wallets = (new AppWallet())
+            ->find("user_id = :user", "user={$this->user->id}")
+            ->order("wallet")
+            ->fetch(true);
+
+        echo $this->view->render("wallets", [
+            "head" => $head,
+            "wallets" => $wallets
+        ]);
+    }
+
+    /**
      * APP LAUNCH - Realizando lançamentos
      * @param array $data
      * @throws \Exception
